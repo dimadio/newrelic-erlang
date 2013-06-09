@@ -37,7 +37,7 @@ get_redirect_host() ->
     Url = url([{method, get_redirect_host}]),
     case request(Url) of
         {ok, {{200, "OK"}, _, Body}} ->
-            {ok, Struct} = json:decode(Body),
+            {ok, {Struct}} = json:decode(Body),
             binary_to_list(proplists:get_value(<<"return_value">>, Struct));
         {ok, {{503, _}, _, _}} ->
             throw(newrelic_down);
@@ -63,7 +63,7 @@ connect(Collector, Hostname) ->
     {ok, JsonData} =json:encode(Data),
     case request(Url, JsonData) of
         {ok, {{200, "OK"}, _, Body}} ->
-            {ok, Struct} = json:decode(Body),
+            {ok, {Struct}} = json:decode(Body),
             {Return} = proplists:get_value(<<"return_value">>, Struct),
             proplists:get_value(<<"agent_run_id">>, Return);
         {ok, {{503, _}, _, _}} ->
@@ -95,10 +95,10 @@ push_error_data(Collector, RunId, ErrorData) ->
 
 
 push_data(Url, Data) ->
-    JsonData = json:encode(Data),
+    {ok, JsonData} = json:encode(Data),
     case request(Url, JsonData) of
         {ok, {{200, "OK"}, _, Response}} ->
-            {ok, Struct} = jiffy:decode(Response),
+            {ok, {Struct}} = json:decode(Response),
             case proplists:get_value(<<"exception">>, Struct) of
                 undefined ->
                     ok;
