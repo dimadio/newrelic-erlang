@@ -11,6 +11,8 @@ included `newrelic_statman` transformer. It is fairly easy to
 transform the metrics, so if you're using Folsom, estatsd or your own
 tools, have a look at `newrelic_statman` to see how it's done.
 
+A sample application showing how to use this application is available [here](https://github.com/dparnell/newrelic-erlang-example).
+
 ## Configuration
 
 Two application environment variables must be set in the `newrelic` app:
