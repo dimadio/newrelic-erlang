@@ -214,6 +214,7 @@ class2bin(Atom) when is_atom(Atom) ->
     [F | R] = atom_to_list(Atom),
     list_to_binary([string:to_upper(F) | R]).
 
+to_bin(List) when is_list(List) -> list_to_binary(List);
 to_bin(Atom) when is_atom(Atom) -> list_to_binary(atom_to_list(Atom));
 to_bin(Bin) when is_binary(Bin)-> Bin.
 
