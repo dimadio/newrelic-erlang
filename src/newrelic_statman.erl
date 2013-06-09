@@ -216,6 +216,7 @@ class2bin(Atom) when is_atom(Atom) ->
 
 to_bin(List) when is_list(List) -> list_to_binary(List);
 to_bin(Atom) when is_atom(Atom) -> list_to_binary(atom_to_list(Atom));
+to_bin(Number) when is_integer(Number) -> integer_to_list(Number);
 to_bin(Bin) when is_binary(Bin)-> Bin.
 
 scope2bin(Url) when is_binary(Url) ->
