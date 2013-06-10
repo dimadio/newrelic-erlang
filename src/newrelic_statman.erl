@@ -135,7 +135,7 @@ transform_histogram(Metric) ->
 
         {Scope, total} when is_binary(Scope) ->
             [[{[{name, <<"WebTransaction/Uri", Scope/binary>>},
-                {scope, <<"">>}]},
+                {scope, Scope}]},
              Data]];
 
         {A, B} when is_atom(A) andalso is_atom(B) ->
