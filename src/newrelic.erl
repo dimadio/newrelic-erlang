@@ -138,14 +138,14 @@ request(Url) ->
 
 request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
-    {ok, _StatusCode, 
-     _RespHeaders, 
+    {ok, StatusCode, 
+     RespHeaders, 
      Client} = hackney:request(post, Url, 
 			       [{<<"Content-Encoding">>, <<"identity">>}], 
 			       Body, []),
 
     {ok, Response, _Client1} = hackney:body(Client),
-    Response.
+    {ok, {{StatusCode, "OK"}, RespHeaders, Response}}.
     
 
 
