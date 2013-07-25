@@ -144,8 +144,8 @@ request(Url, Body) ->
 			       [{<<"Content-Encoding">>, <<"identity">>}], 
 			       Body, []),
 
-    {ok, Body, _Client1} = hackney:body(Client),
-    Body.
+    {ok, Response, _Client1} = hackney:body(Client),
+    Response.
     
 
 
