@@ -137,8 +137,13 @@ request(Url) ->
     request(Url, <<"[]">>).
 
 request(Url, Body) ->
-    %%lhttpc:request(Url, post, [{<<"Content-Encoding">>, <<"identity">>}], Body, 5000).
-    {ok, _StatusCode, _RespHeaders, Client} = hackney:request(post, Url, [{"Content-Encoding", "identity"}], Body, []),
+    %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
+    {ok, _StatusCode, 
+     _RespHeaders, 
+     Client} = hackney:request(post, Url, 
+			       [{<<"Content-Encoding">>, <<"identity">>}], 
+			       Body, []),
+
     {ok, Body, _Client1} = hackney:body(Client),
     Body.
     
