@@ -41,8 +41,10 @@ get_redirect_host() ->
             binary_to_list(proplists:get_value(<<"return_value">>, Struct));
         {ok, {{503, _}, _, _}} ->
             throw(newrelic_down);
-        {error, timeout} ->
-            throw(newrelic_down)
+        {error,etimedout} ->
+            throw(newrelic_down);
+	{error, _}->
+	    throw(newrelic_down)
     end.
 
 
@@ -138,14 +140,23 @@ request(Url) ->
 
 request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
-    {ok, StatusCode, 
-     RespHeaders, 
-     Client} = hackney:request(post, Url, 
+    error_logger:info_msg("Send body: ~p", [Body]),
+    
+    case hackney:request(post, Url, 
 			       [{<<"Content-Encoding">>, <<"identity">>}], 
-			       Body, []),
+			       Body, []) of
 
-    {ok, Response, _Client1} = hackney:body(Client),
-    {ok, {{StatusCode, "OK"}, RespHeaders, Response}}.
+	{ok, StatusCode, RespHeaders, Client} ->
+	    {ok, Response, _Client1} = hackney:body(Client),
+	    {ok, {{StatusCode, "OK"}, RespHeaders, Response}};
+
+	{error, Reason} ->
+	    {error, Reason};
+
+	Else ->
+	    error_logger:error_msg("Failed request to newrelic server ~p with ~p: ~p", [Url, Body, Else]),
+	    {error, failed}
+    end.
     
 
 
