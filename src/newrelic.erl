@@ -3,7 +3,7 @@
 -export([push/3, push_metric_data/3, push_error_data/3,
          connect/2, get_redirect_host/0]).
 
-% Exported for testing
+						% Exported for testing
 -export([sample_data/0, sample_error_data/0]).
 
 -define(BASE_URL, "http://~s/agent_listener/invoke_raw_method?").
@@ -77,40 +77,40 @@ connect(Collector, Hostname) ->
 
 push_metric_data(Collector, RunId, MetricData) ->
     Url = url(Collector, [{method, metric_data},
-                          {run_id, RunId}]),
+			  {run_id, RunId}]),
 
     Data = [RunId,
-            now_to_seconds() - 60,
-            now_to_seconds(),
-            MetricData],
+	    now_to_seconds() - 60,
+	    now_to_seconds(),
+	    MetricData],
 
     push_data(Url, Data).
 
 push_error_data(Collector, RunId, ErrorData) ->
     Url = url(Collector, [{method, error_data},
-                          {run_id, RunId}]),
+			  {run_id, RunId}]),
 
     Data = [RunId,
-            ErrorData],
+	    ErrorData],
 
-	push_data(Url, Data).
+    push_data(Url, Data).
 
 
 push_data(Url, Data) ->
     {ok, JsonData} = json:encode(Data),
     case request(Url, JsonData) of
-        {ok, {{200, "OK"}, _, Response}} ->
-            {ok, {Struct}} = json:decode(Response),
-            case proplists:get_value(<<"exception">>, Struct) of
-                undefined ->
-                    ok;
-                Exception ->
-                    {error, Exception}
-            end;
-        {ok, {{503, _}, _, _}} ->
-            throw(newrelic_down);
-        {error, timeout} ->
-            throw(newrelic_down)
+	{ok, {{200, "OK"}, _, Response}} ->
+	    {ok, {Struct}} = json:decode(Response),
+	    case proplists:get_value(<<"exception">>, Struct) of
+		undefined ->
+		    ok;
+		Exception ->
+		    {error, Exception}
+	    end;
+	{ok, {{503, _}, _, _}} ->
+	    throw(newrelic_down);
+	{error, timeout} ->
+	    throw(newrelic_down)
     end.
 
 
@@ -141,10 +141,10 @@ request(Url) ->
 request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
     error_logger:info_msg("Send body: ~p", [Body]),
-    
+
     case hackney:request(post, Url, 
-			       [{<<"Content-Encoding">>, <<"identity">>}], 
-			       Body, []) of
+			 [{<<"Content-Encoding">>, <<"identity">>}], 
+			 Body, []) of
 
 	{ok, StatusCode, RespHeaders, Client} ->
 	    {ok, Response, _Client1} = hackney:body(Client),
@@ -157,7 +157,7 @@ request(Url, Body) ->
 	    error_logger:error_msg("Failed request to newrelic server ~p with ~p: ~p", [Url, Body, Else]),
 	    {error, failed}
     end.
-    
+
 
 
 url(Args) ->
@@ -305,36 +305,36 @@ sample_data() ->
     ].
 
 sample_error_data() ->
-	[[
-	    now_to_seconds(),
-	    <<"WebTransaction/Uri/testUrl">>,
-	    <<"error">>,
-	    <<"RuntimeError">>,
-	    {
-	        [
-	          {<<"parameter_groups">>,
-	            {[{<<"Transaction metrics">>,
-	                  {[{<<"Thread/Concurrency">>,<<"1.0146">>}]}
-	                },
-	                {<<"Response properties">>,
-	                  {[{<<"CONTENT_LENGTH">>,<<"12">>},
-	                      {<<"STATUS">>,<<"200">>}]}
-	                }
-	              ]}
-	          },
-	          {<<"stack_trace">>,
-	            [
-	              <<"Traceback (most recent call last):\n">>,
-	              <<"  Stacktrace line 1">>,
-	              <<"  Stacktrace line 2">>,
-	              <<"  Stacktrace line 3">>,
-	              <<"  Stacktrace line 4">>,
-	              <<"RuntimeError: error\n">>
-	            ]
-	          },
-	          {<<"request_params">>,{[{<<"key">>,[<<"value">>]}]}},
-	          {<<"request_uri">>,<<"/testUrl">>}
-	        ]
-	     }
-	]].
+    [[
+      now_to_seconds(),
+      <<"WebTransaction/Uri/testUrl">>,
+      <<"error">>,
+      <<"RuntimeError">>,
+      {
+	[
+	 {<<"parameter_groups">>,
+	  {[{<<"Transaction metrics">>,
+	     {[{<<"Thread/Concurrency">>,<<"1.0146">>}]}
+	    },
+	    {<<"Response properties">>,
+	     {[{<<"CONTENT_LENGTH">>,<<"12">>},
+	       {<<"STATUS">>,<<"200">>}]}
+	    }
+	   ]}
+	 },
+	 {<<"stack_trace">>,
+	  [
+	   <<"Traceback (most recent call last):\n">>,
+	   <<"  Stacktrace line 1">>,
+	   <<"  Stacktrace line 2">>,
+	   <<"  Stacktrace line 3">>,
+	   <<"  Stacktrace line 4">>,
+	   <<"RuntimeError: error\n">>
+	  ]
+	 },
+	 {<<"request_params">>,{[{<<"key">>,[<<"value">>]}]}},
+	 {<<"request_uri">>,<<"/testUrl">>}
+	]
+      }
+     ]].
 
