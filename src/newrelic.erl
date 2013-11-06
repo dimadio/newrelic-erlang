@@ -58,7 +58,7 @@ connect(Collector, Hostname) ->
               {identifier, app_name()},
               {pid, ?l2i(os:getpid())},
               {environment, []},
-              {language, <<"python">>},
+              {language, <<"erlang">>},
               {settings, {[]}}
              ]}],
 
