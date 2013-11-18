@@ -71,7 +71,9 @@ connect(Collector, Hostname) ->
         {ok, {{503, _}, _, _}} ->
             throw(newrelic_down);
         {error, timeout} ->
-            throw(newrelic_down)
+            throw(newrelic_down);
+	{error, _}->
+	    throw(newrelic_down)
     end.
 
 
@@ -110,6 +112,8 @@ push_data(Url, Data) ->
 	{ok, {{503, _}, _, _}} ->
 	    throw(newrelic_down);
 	{error, timeout} ->
+	    throw(newrelic_down);
+	{error, _}->
 	    throw(newrelic_down)
     end.
 
