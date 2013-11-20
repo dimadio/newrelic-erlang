@@ -144,7 +144,7 @@ request(Url) ->
 
 request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
-    error_logger:info_msg("Send body: ~p", [Body]),
+    %% error_logger:info_msg("Send body: ~p", [Body]),
 
     case hackney:request(post, Url, 
 			 [{<<"Content-Encoding">>, <<"identity">>}], 
