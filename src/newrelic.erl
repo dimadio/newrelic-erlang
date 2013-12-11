@@ -148,7 +148,7 @@ request(Url, Body) ->
 
     case hackney:request(post, Url,
 			 [{<<"Content-Encoding">>, <<"identity">>}],
-			 Body, [{follow_redirect, true}, {connect_timeout, 500},
+			 Body, [{follow_redirect, true}, {connect_timeout, 1500},
 				{recv_timeout, 1000}]) of
 
 	{ok, StatusCode, RespHeaders, Client} ->
