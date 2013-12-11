@@ -146,9 +146,10 @@ request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
     %% error_logger:info_msg("Send body: ~p", [Body]),
 
-    case hackney:request(post, Url, 
-			 [{<<"Content-Encoding">>, <<"identity">>}], 
-			 Body, []) of
+    case hackney:request(post, Url,
+			 [{<<"Content-Encoding">>, <<"identity">>}],
+			 Body, [{follow_redirect, true}, {connect_timeout, 500},
+				{recv_timeout, 1000}]) of
 
 	{ok, StatusCode, RespHeaders, Client} ->
 	    {ok, Response, _Client1} = hackney:body(Client),
