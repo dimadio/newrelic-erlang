@@ -35,7 +35,8 @@ handle_cast(_Msg, State) ->
 handle_info(poll, State) ->
     erlang:send_after(60000, self(), poll),
 
-    {ok, Hostname} = inet:gethostname(),
+    %% {ok, Hostname} = inet:gethostname(),
+    Hostname = net_adm:localhost(),
 
     case catch (State#state.poll_fun)() of
         {'EXIT', Error} ->
