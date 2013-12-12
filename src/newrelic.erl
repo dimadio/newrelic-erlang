@@ -18,13 +18,23 @@
 %% @doc: Connects to New Relic and sends the hopefully correctly
 %% formatted data and registers it under the given hostname.
 push(Hostname, Data, Errors) ->
-    Collector = get_redirect_host(),
-    RunId = connect(Collector, Hostname),
-    case push_metric_data(Collector, RunId, Data) of
-        ok ->
-            push_error_data(Collector, RunId, Errors);
-        Error ->
-            Error
+    case get_redirect_host() of
+	{ok, Collector} ->
+	    case connect(Collector, Hostname) of
+		{ok, RunId} ->
+		    case push_metric_data(Collector, RunId, Data) of
+				   ok ->
+				       push_error_data(Collector, RunId, Errors);
+				   Error ->
+				       Error
+			       end;
+		{error, Error} ->
+		    error_logger:warning_msg("newrelic push: connect failed: ~p~n", [Error]),
+		    {error, Error}
+	    end;
+	{error, Error} ->
+	    error_logger:warning_msg("newrelic push: get_redirect_host failed: ~p~n", [Error]),
+	    {error, Error}
     end.
 
 
@@ -38,13 +48,13 @@ get_redirect_host() ->
     case request(Url) of
         {ok, {{200, "OK"}, _, Body}} ->
             {ok, {Struct}} = json:decode(Body),
-            binary_to_list(proplists:get_value(<<"return_value">>, Struct));
+            {ok, binary_to_list(proplists:get_value(<<"return_value">>, Struct))};
         {ok, {{503, _}, _, _}} ->
-            throw(newrelic_down);
+            {error, 503};
         {error,etimedout} ->
-            throw(newrelic_down);
-	{error, _}->
-	    throw(newrelic_down)
+            {error,etimedout};
+	{error, Err}->
+	    {error, Err}
     end.
 
 
@@ -67,13 +77,13 @@ connect(Collector, Hostname) ->
         {ok, {{200, "OK"}, _, Body}} ->
             {ok, {Struct}} = json:decode(Body),
             {Return} = proplists:get_value(<<"return_value">>, Struct),
-            proplists:get_value(<<"agent_run_id">>, Return);
+            {ok, proplists:get_value(<<"agent_run_id">>, Return)};
         {ok, {{503, _}, _, _}} ->
-            throw(newrelic_down);
+            {error, 503};
         {error, timeout} ->
-            throw(newrelic_down);
-	{error, _}->
-	    throw(newrelic_down)
+            {error, timeout};
+	{error, Error}->
+	    {error, Error}
     end.
 
 
@@ -86,7 +96,12 @@ push_metric_data(Collector, RunId, MetricData) ->
 	    now_to_seconds(),
 	    MetricData],
 
-    push_data(Url, Data).
+    case push_data(Url, Data) of
+	ok ->
+	    ok;
+	{error, Error} ->
+	    error_logger:warning_msg("newrelic push: push_metric_data failed: ~p~n", [Error])
+    end.
 
 push_error_data(Collector, RunId, ErrorData) ->
     Url = url(Collector, [{method, error_data},
@@ -95,7 +110,12 @@ push_error_data(Collector, RunId, ErrorData) ->
     Data = [RunId,
 	    ErrorData],
 
-    push_data(Url, Data).
+    case push_data(Url, Data) of
+	ok ->
+	    ok;
+	{error, Error} ->
+	    error_logger:warning_msg("newrelic push: push_error_data failed: ~p~n", [Error])
+    end.
 
 
 push_data(Url, Data) ->
@@ -110,11 +130,11 @@ push_data(Url, Data) ->
 		    {error, Exception}
 	    end;
 	{ok, {{503, _}, _, _}} ->
-	    throw(newrelic_down);
+	    {error, 503};
 	{error, timeout} ->
-	    throw(newrelic_down);
-	{error, _}->
-	    throw(newrelic_down)
+	    {error, timeout};
+	{error, Error}->
+	    {error, Error}
     end.
 
 
@@ -148,8 +168,9 @@ request(Url, Body) ->
 
     case hackney:request(post, Url,
 			 [{<<"Content-Encoding">>, <<"identity">>}],
-			 Body, [{follow_redirect, true}, {connect_timeout, 1500},
-				{recv_timeout, 1000}]) of
+			 Body, [{follow_redirect, true},
+				{connect_timeout, 2500},
+				{recv_timeout, 2000}]) of
 
 	{ok, StatusCode, RespHeaders, Client} ->
 	    {ok, Response, _Client1} = hackney:body(Client),
