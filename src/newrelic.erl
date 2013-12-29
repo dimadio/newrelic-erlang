@@ -173,7 +173,8 @@ request(Url, Body) ->
 				{recv_timeout, 2000}]) of
 
 	{ok, StatusCode, RespHeaders, Client} ->
-	    {ok, Response, _Client1} = hackney:body(Client),
+	    {ok, Response, Client1} = hackney:body(Client),
+	    hackney:close(Client1),
 	    {ok, {{StatusCode, "OK"}, RespHeaders, Response}};
 
 	{error, Reason} ->
