@@ -27,8 +27,9 @@ If you're using Statman and use the following conventions for naming
 your keys, you can use New Relic "for free".
 
 
- * `{<<"/hello/world">>, {class, segment}}` - Web transaction, class
-   and segment can be anything and will show up in the "Performance
+ * `{<<"/hello/world">>, {class, segment}}` - Web transaction, class 
+   better to be 'OtherTransaction/Python' and segment to be atom - funnction name
+   so calls will show up in the "Performance
    breakdown"
  * `{<<"/hello/world">>, {db, <<"something">>}}` - Web transaction
    with database access, will show up in the "Performance breakdown"
