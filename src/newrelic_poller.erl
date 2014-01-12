@@ -36,23 +36,30 @@ handle_info(poll, State) ->
     erlang:send_after(60000, self(), poll),
 
     %% {ok, Hostname} = inet:gethostname(),
-    Hostname = net_adm:localhost(),
+    AHostname = net_adm:localhost(),
+    Internal = endswith(AHostname, "internal"),
+    Hostname = case Internal of
+		   true ->
+		       AHostname ++ ".";
+		   false ->
+		       Hostname
+	       end,
 
     case catch (State#state.poll_fun)() of
-        {'EXIT', Error} ->
-            error_logger:warning_msg("newrelic_poller: polling failed: ~p~n", [Error]),
-            ok;
-        {Metrics, Errors} ->
-            case catch newrelic:push(Hostname, Metrics, Errors) of
-                ok ->
-                    ok;
-                newrelic_down ->
-                    error_logger:warning_msg("newrelic_poller: newrelic is down~n");
-                Other ->
-                    error_logger:warning_msg("newrelic_poller: push failed: ~p~n",
-                                             [Other]),
-                    ok
-            end
+	{'EXIT', Error} ->
+	    error_logger:warning_msg("newrelic_poller: polling failed: ~p~n", [Error]),
+	    ok;
+	{Metrics, Errors} ->
+	    case catch newrelic:push(Hostname, Metrics, Errors) of
+		ok ->
+		    ok;
+		newrelic_down ->
+		    error_logger:warning_msg("newrelic_poller: newrelic is down~n");
+		Other ->
+		    error_logger:warning_msg("newrelic_poller: push failed: ~p~n",
+					     [Other]),
+		    ok
+	    end
     end,
 
     {noreply, State}.
@@ -66,3 +73,16 @@ code_change(_OldVsn, State, _Extra) ->
 %%
 %% Internal functions
 %%
+ends_with(String, Suffix)->
+    starts_with(lists:reverse(String), lists:reverse(Suffix)).
+
+starts_with([] = _String, []=_Prefix)->
+    true;
+starts_with( _String, []=_Prefix)->
+    true;
+starts_with([SH|SR] = _String, [PH|PR]=_Prefix)->
+    case SH of
+	PH ->
+	    starts_with(SR, PR);
+	_ -> false
+    end.
