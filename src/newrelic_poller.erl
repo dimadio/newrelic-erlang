@@ -37,12 +37,12 @@ handle_info(poll, State) ->
 
     %% {ok, Hostname} = inet:gethostname(),
     AHostname = net_adm:localhost(),
-    Internal = endswith(AHostname, "internal"),
+    Internal = ends_with(AHostname, "internal"),
     Hostname = case Internal of
 		   true ->
 		       AHostname ++ ".";
 		   false ->
-		       Hostname
+		       AHostname
 	       end,
 
     case catch (State#state.poll_fun)() of
