@@ -37,10 +37,10 @@ handle_info(poll, State) ->
 
     %% {ok, Hostname} = inet:gethostname(),
     AHostname = net_adm:localhost(),
-    Internal = ends_with(AHostname, "internal"),
+    Internal = ends_with(AHostname, "internal."),
     Hostname = case Internal of
 		   true ->
-		       AHostname ++ ".";
+		       lists:reverse(tl(lists:reverse(AHostname)));
 		   false ->
 		       AHostname
 	       end,
