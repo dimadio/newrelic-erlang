@@ -219,7 +219,10 @@ pluck(Name, N, L) ->
 
 
 
-class2bin(db) -> <<"Database">>;
+class2bin(db) ->
+    <<"Database">>;
+class2bin(Bin) when is_binary(Bin) ->
+    Bin;
 class2bin(Atom) when is_atom(Atom) ->
     [F | R] = atom_to_list(Atom),
     list_to_binary([string:to_upper(F) | R]).
