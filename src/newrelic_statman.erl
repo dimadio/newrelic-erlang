@@ -128,6 +128,16 @@ transform_histogram(Metric) ->
 
             ];
 
+	{Scope, {task, Segment}} ->
+	    [
+	     [{[{name, << <<"OtherTransaction/Task/">>/binary, (class2bin(Segment))/binary>>},
+		{scope, task2bin(Scope)}]},
+              Data],
+	    [{[{name, <<"OtherTransaction/all">>},
+		{scope, <<>>}]},
+              Data]]
+	    ;
+
         {Scope, {Class, Segment}} when is_binary(Scope) ->
             [[{[{name, <<(class2bin(Class))/binary, "/", (to_bin(Segment))/binary>>},
                 {scope, scope2bin(Scope)}]},
@@ -221,3 +231,8 @@ to_bin(Bin) when is_binary(Bin)-> Bin.
 
 scope2bin(Url) when is_binary(Url) ->
     <<"WebTransaction/Uri", Url/binary>>.
+
+task2bin(<<>>) ->
+    <<>>;
+task2bin(Scope) when is_binary(Scope) ->
+    <<"OtherTransaction/Task/", Scope/binary>>.
