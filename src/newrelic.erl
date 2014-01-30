@@ -47,7 +47,7 @@ get_redirect_host() ->
     Url = url([{method, get_redirect_host}]),
     case request(Url) of
         {ok, {{200, "OK"}, _, Body}} ->
-            {ok, {Struct}} = mochijson:decode(Body),
+            {Struct} = jiffy:decode(Body),
             {ok, binary_to_list(proplists:get_value(<<"return_value">>, Struct))};
         {ok, {{503, _}, _, _}} ->
             {error, 503};
@@ -72,10 +72,10 @@ connect(Collector, Hostname) ->
               {settings, {[]}}
              ]}],
 
-    {ok, JsonData} =mochijson:encode(Data),
+    JsonData =jiffy:encode(Data),
     case request(Url, JsonData) of
         {ok, {{200, "OK"}, _, Body}} ->
-            {ok, {Struct}} = mochijson:decode(Body),
+            {Struct} = jiffy:decode(Body),
             {Return} = proplists:get_value(<<"return_value">>, Struct),
             {ok, proplists:get_value(<<"agent_run_id">>, Return)};
         {ok, {{503, _}, _, _}} ->
@@ -119,10 +119,10 @@ push_error_data(Collector, RunId, ErrorData) ->
 
 
 push_data(Url, Data) ->
-    {ok, JsonData} = mochijson:encode(Data),
+    JsonData = jiffy:encode(Data),
     case request(Url, JsonData) of
 	{ok, {{200, "OK"}, _, Response}} ->
-	    {ok, {Struct}} = mochijson:decode(Response),
+	    {Struct} = jiffy:decode(Response),
 	    case proplists:get_value(<<"exception">>, Struct) of
 		undefined ->
 		    ok;
@@ -164,7 +164,7 @@ request(Url) ->
 
 request(Url, Body) ->
     %%lhttpc:request(Url, post, [{"Content-Encoding", "identity"}], Body, 5000).
-    %% error_logger:info_msg("Send body: ~p", [Body]),
+    error_logger:info_msg("Send body: ~p", [Body]),
 
     case hackney:request(post, Url,
 			 [{<<"Content-Encoding">>, <<"identity">>}],
