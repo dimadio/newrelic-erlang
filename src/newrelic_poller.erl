@@ -62,7 +62,11 @@ handle_info(poll, State) ->
 	    end
     end,
 
+    {noreply, State};
+handle_info(Command, State) ->
+    error_logger:warning_msg("newrelic_poller: unrecognized command: ~p~n", [Command]),
     {noreply, State}.
+
 
 terminate(_Reason, _State) ->
     ok.
