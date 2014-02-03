@@ -1,3 +1,9 @@
+# Project forked and tuned up  a bit
+* http client replaced with hackney
+* json replaced with jiffy
+* throw replaced with logging
+* background task support added
+
 # NewRelic for Erlang
 
 This library implements the New Relic API and allows sending arbitrary
@@ -20,17 +26,54 @@ Two application environment variables must be set in the `newrelic` app:
  * `application_name`: human readable name of the app, will show up in the web interface
  * `license_key`: secret license key
 
+Start newrelic poller as following:
+
+    case application:get_env(newrelic,license_key) of
+	undefined ->
+	    ok;
+	_ ->
+	    my_supervisor:add_child(newrelic_poller, [fun newrelic_statman:poll/0], worker)
+    end,
+
+ Having inside the "my_supervisor" 
+ 
+
+    -define(CHILD(I, Params, Type), {I, {I, start_link, Params}, permanent, 5000, Type, [I]}).
+    add_child(Module, Params, Type)->
+        supervisor:start_child(?MODULE, ?CHILD(Module, Params, Type)).
 
 ## Statman integration
 
 If you're using Statman and use the following conventions for naming
 your keys, you can use New Relic "for free".
 
+To record web transaction:
 
- * `{<<"/hello/world">>, {class, segment}}` - Web transaction, class 
-   better to be 'OtherTransaction/Python' and segment to be atom - funnction name
+    statman_histogram:record_value({<<"/URL">>, total}, StartProcess)
+
+ * URL have to start with "/"
+ * StartProcess is result of os:timestamp() at executiom start
+
+
+To record web transaction break down:
+
+    statman_histogram:record_value({<<"/URL">>, 
+                                    {'OtherTransaction/Python', FuncName}}, Start)
+				    
+  * FuncName is atom, function name
+  
+
+To record error:
+
+    statman_counter:incr({<<"/URL">>, {error,
+    					      {"ErrorCode", <<"Message">>}}})
+
+Other:
+  * `{<<"/hello/world">>, {class, segment}}` - Web transaction, class 
+   better to be 'OtherTransaction/Python' and segment to be atom - function name
    so calls will show up in the "Performance
    breakdown"
+ * {<</task/name>>, {task, <<"upload_raw">>}}, StartTime) - Record background task, will show up in background tasks tab
  * `{<<"/hello/world">>, {db, <<"something">>}}` - Web transaction
    with database access, will show up in the "Performance breakdown"
    as well as "Overview". Unfortunately not in "Database" yet
