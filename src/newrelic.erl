@@ -29,11 +29,11 @@ push(Hostname, Data, Errors) ->
 				       Error
 			       end;
 		{error, Error} ->
-		    error_logger:warning_msg("newrelic push: connect failed: ~p~n", [Error]),
+		    error_logger:info_msg("newrelic push: connect failed: ~p~n", [Error]),
 		    {error, Error}
 	    end;
 	{error, Error} ->
-	    error_logger:warning_msg("newrelic push: get_redirect_host failed: ~p~n", [Error]),
+	    error_logger:info_msg("newrelic push: get_redirect_host failed: ~p~n", [Error]),
 	    {error, Error}
     end.
 
@@ -100,7 +100,7 @@ push_metric_data(Collector, RunId, MetricData) ->
 	ok ->
 	    ok;
 	{error, Error} ->
-	    error_logger:warning_msg("newrelic push: push_metric_data failed: ~p~n", [Error])
+	    error_logger:info_msg("newrelic push: push_metric_data failed: ~p~n", [Error])
     end.
 
 push_error_data(Collector, RunId, ErrorData) ->
@@ -114,7 +114,7 @@ push_error_data(Collector, RunId, ErrorData) ->
 	ok ->
 	    ok;
 	{error, Error} ->
-	    error_logger:warning_msg("newrelic push: push_error_data failed: ~p~n", [Error])
+	    error_logger:info_msg("newrelic push: push_error_data failed: ~p~n", [Error])
     end.
 
 
@@ -181,7 +181,7 @@ request(Url, Body) ->
 	    {error, Reason};
 
 	Else ->
-	    error_logger:error_msg("Failed request to newrelic server ~p with ~p: ~p", [Url, Body, Else]),
+	    error_logger:info_msg("Failed request to newrelic server ~p with ~p: ~p", [Url, Body, Else]),
 	    {error, failed}
     end.
 
